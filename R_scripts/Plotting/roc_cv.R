@@ -13,6 +13,5 @@ ggplot(data = rocr_cv_perf,
    theme_minimal() +
    theme(text = element_text(family="Times", size=12),
          plot.title = element_text(face="bold",hjust=0.5,size=15))
-ggsave(filename="../Images/logit_cv_roc.png",
-      device = "png",
-      dpi="retina")
+ggsave(filename="./Images/logit_cv_roc.pdf",
+      device = "pdf")

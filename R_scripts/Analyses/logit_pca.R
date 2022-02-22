@@ -1,6 +1,6 @@
 #run a simple logit regression on the data using PCA 1 and 2 as predictors
-unknown_sp <- which(pca_scores_levallois$Species=="Unknown")
-logit_levallois <- glm(SpeciesCode~PC1+PC2+PC3+PC4,
+unknown_sp <- which(pca_scores_levallois$Sp=="unknown")
+logit_levallois <- glm(Sp~PC1+PC2+PC3+PC4,
                         data=pca_scores_levallois[-unknown_sp,],
                         family=binomial(link="logit"))
 print(summary(logit_levallois))
@@ -58,8 +58,16 @@ logit_fitted <- cbind(Probability = plogis(logit_fitted$fit),
 logit_fitted <- data.frame(PC=PC,Score=prediction_x,logit_fitted)
 
 ##predict logit for JKF-1 data
+JKF1 = pca_scores_levallois[which(pca_scores_levallois$Site == "JKF-1"),]
 logit_predict_JKF1 <- predict(logit_levallois,
-                                    newdata=pca_scores_levallois[unknown_sp,],
+                                    newdata=JKF1,
                                     type="response",
                                     se.fit=T)
 print(summary(logit_predict_JKF1))
+
+ALM3 = pca_scores_levallois[which(pca_scores_levallois$Site == "ALM-3"),]
+logit_predict_ALM3 <- predict(logit_levallois,
+                                    newdata=ALM3,
+                                    type="response",
+                                    se.fit=T)
+print(summary(logit_predict_ALM3))

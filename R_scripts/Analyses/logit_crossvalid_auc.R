@@ -1,5 +1,5 @@
 #quick cross validation for the logit model to create a meaningful ROC curve
-unknown_sp <- which(pca_scores_levallois$Species=="Unknown")
+unknown_sp <- which(pca_scores_levallois$Sp=="unknown")
 d <- pca_scores_levallois[-unknown_sp,]
 n <- nrow(d)
 ##repeat many times to get confidence envelope for the ROC curve
@@ -10,7 +10,7 @@ for( j in 1:1000){
    random_sample_index <- base::sample(1:n,n/2)
    d_train <- d[random_sample_index,]
    d_cv <- d[-random_sample_index,]
-   logit_levallois_train <- glm(SpeciesCode~PC1+PC2+PC3+PC4,
+   logit_levallois_train <- glm(SpeciesCode~PC1+PC2+PC3,
                                  data=d_train,
                                  family=binomial(link="logit"))
    logit_levallois_cv_pred <- predict(logit_levallois_train,type="response",newdata=d_cv)
