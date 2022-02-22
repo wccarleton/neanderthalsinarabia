@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ 7cb77fdc-8b19-11ec-2aca-77f62af7b609
-using CSV, Plots, MultivariateStats, StatsBase, DataFrames, InvertedIndices, RCall, LinearAlgebra, ColorSchemes, PlotlyBase, PlotlyJS, WebIO, StatsPlots, PairPlots, KernelDensity, GLM, MLJ, MLJGLMInterface
+using CSV, Downloads, Plots, MultivariateStats, StatsBase, DataFrames, InvertedIndices, RCall, LinearAlgebra, ColorSchemes, PlotlyBase, PlotlyJS, WebIO, StatsPlots, PairPlots, KernelDensity, GLM, MLJ, MLJGLMInterface
 
 # ╔═╡ c5723ae4-a136-4b2e-980c-88ac347d9fcf
 md"""
@@ -34,7 +34,12 @@ Load the required CSV file containing Levellois tool measurments. Each row corre
 """
 
 # ╔═╡ ebf53492-21be-400d-8407-e02aedbfce56
-levallois_df = DataFrame(CSV.File("Data/Levallois_flake_data_CORRECTED_v5.csv"))
+begin
+	#levallois_df = DataFrame(CSV.File("../../Data/Levallois_flake_data.csv"))
+	data_url = "https://raw.githubusercontent.com/wccarleton/neanderthalsinarabia/master/Data/Levallois_flake_data.csv"
+	github_data = Downloads.download(data_url)
+	levallois_df = DataFrame(CSV.File(github_data))
+end
 
 # ╔═╡ b2c937e5-63d6-4955-8c0d-bb661e3209c7
 md"""
@@ -111,7 +116,7 @@ Some rows containing duplicate values were identified. They are printed in the t
 # ╔═╡ 0837a17e-1468-4e67-82ff-c95a8882f31a
 md"""
 ### PCA
-Now we can run the PCA. As a prelinimary step, we will calculate a Kaiser-Meyer-Olkin Measure of Sampling Adequacy (MSA) to deremine whether the data are likely to be "factorable". The index is simple heuristic designed essentially to determine whether there are correlations among variables in a multivariate data set that could indicate it's worthwhile to attempt extracting principal components and/or factors from that data---if the variables were perfectly uncorrelated, then no dimensional reduction could be acheived and the "information" in the data could not be more densely represented by a linear combination of extracted components/factors than simply using the raw values. An overall MSA of less than 0.5 is considered indicative of a data matrix with variables that are already very uncorrelated, while an index of greater than 0.7 has been considered sufficiently compelling evidence that the relevant data can be meaningfully factored and/or reduced. Since no Julia package appears to already contain functions for estimating the index, we will use RCall.jl (another Julia package) to call the KMO function from the R::psych package.    
+Now we can run the PCA. As a prelinimary step, we will calculate a Kaiser-Meyer-Olkin Measure of Sampling Adequacy (MSA) to deremine whether the data are likely to be "factorable". The index is simple heuristic designed essentially to determine whether there are correlations among variables in a multivariate data set. Correlations would suggest it's worthwhile to attempt extracting principal components and/or factors from that data---if the variables were perfectly uncorrelated, then no dimensional reduction could be acheived and the information in the data could not be more densely represented by a linear combination of extracted components/factors than simply using the raw values. An overall MSA of less than 0.5 is considered indicative of a data matrix with variables that are already very uncorrelated, while an index of greater than 0.7 has been considered sufficiently compelling evidence that the relevant data can be meaningfully factored and/or reduced. Since no Julia package appears to already contain functions for estimating the index, we will use RCall.jl (another Julia package) to call the KMO function from the R::psych package.    
 """
 
 # ╔═╡ 4b5d8f6b-90dd-4b63-857f-08d84ee22c0a
@@ -178,7 +183,7 @@ end
 
 # ╔═╡ 99f16129-e31d-4c5b-ab76-fbf6f4a5e1e1
 md"""
-Run PCA, get rotation/projection matrix (eigenvectors). The PCA will be run on only the data with known species assocaitions. The associations of the other data will be predicted with a classification model after the relevant measurements are projected onto the PC space established with the known association data. 
+Run PCA, get rotation/projection matrix (eigenvectors). The PCA will be run on only the data with known species assocaitions. The associations of the other data (those with undetermined associations) will be predicted with a classification model after the relevant measurements are projected onto the PC space. 
 """
 
 # ╔═╡ 88a53e82-aae4-45fc-8c71-8443a34fff40
@@ -221,7 +226,7 @@ levallois_proj_df_all = DataFrames.DataFrame(Site = String.(levallois_df.Site),
 								PC4 = levallois_projected[4,:])
 
 # ╔═╡ d92d8273-3a13-426a-95af-18c7c67599f6
-CSV.write("./Data/levallois_projected.csv", levallois_proj_df_all)
+CSV.write("./levallois_projected.csv", levallois_proj_df_all)
 
 # ╔═╡ 51a87abb-803a-4ac3-9649-57b3557dd49e
 levallois_proj_df = levallois_proj_df_all[levallois_proj_df_all.Sp .!= "unknown",:]
@@ -371,6 +376,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
 InvertedIndices = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
 KernelDensity = "5ab0869b-81aa-558d-bb23-cbf5423bbe9b"
@@ -1915,14 +1921,14 @@ version = "0.9.1+5"
 # ╟─27c63e7e-8c86-4f9b-b765-e8a90e30f5b4
 # ╠═eb8a3876-8e42-4bbf-9163-e5ef082dd7c9
 # ╟─371ec5a2-d8a6-4d34-891f-295a331642d9
-# ╟─0837a17e-1468-4e67-82ff-c95a8882f31a
+# ╠═0837a17e-1468-4e67-82ff-c95a8882f31a
 # ╠═4b5d8f6b-90dd-4b63-857f-08d84ee22c0a
 # ╟─5c3d0973-ef46-4696-bba6-2d736d3c6ef0
 # ╟─a2c4fbb8-10fe-40b7-a7c1-27a445913d9f
 # ╟─447994c5-3882-4ed1-b8b0-02b14e99fe36
 # ╟─6d8dd925-8b3f-4d09-a932-04da2e66238c
 # ╠═7ae8f04b-0106-488f-9d94-4001ca01a307
-# ╟─99f16129-e31d-4c5b-ab76-fbf6f4a5e1e1
+# ╠═99f16129-e31d-4c5b-ab76-fbf6f4a5e1e1
 # ╠═88a53e82-aae4-45fc-8c71-8443a34fff40
 # ╟─9fd49149-bc0b-49a3-9937-525a74bdd3c3
 # ╠═936ced17-43d6-44cb-84ae-370f6b3ab653
